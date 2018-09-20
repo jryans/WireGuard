@@ -15,7 +15,7 @@ WG_SRC := $(abspath $(SELF_DIR)/../src)
 
 # Runtime and verification files
 # TODO: Re-use list from main WireGuard Makefile?
-NF_FILES := $(WG_SRC)/cookie.c
+NF_FILES := $(WG_SRC)/*.c
 
 # Defines for verification
 # Defines taken from regular kernel module build
@@ -44,20 +44,29 @@ NF_VERIF_DEFS := \
 # TODO: Measure performance difference caused by these changes
 # -DCC_HAVE_ASM_GOTO: Triggers incompatible asm via jump_label.h
 
+# Disable features through defines that conflict with Clang
+# TODO: Measure performance difference caused by these changes
+# NF_VERIF_DEFS += \
+
 # Start by disabling default include directories since we want precise control
 NF_VERIF_INCLUDES := -nostdinc
 NF_VERIF_INCLUDES += -isystem /home/jryans/Projects/llvm-project/build-for-vigor/bin/../lib/clang/3.4.2/include
 
+# Add include directories for stubs by default
+ENABLE_STUBS ?= no
+
 # Include directories for stubs
 # TODO: Write more detailed explanation
-NF_VERIF_INCLUDES += -I $(SELF_DIR)/stubs/linux-arch-x86
-NF_VERIF_INCLUDES += -I $(SELF_DIR)/stubs/linux
-NF_VERIF_INCLUDES += -I $(SELF_DIR)/stubs/linux-uapi
+ifeq ($(ENABLE_STUBS),yes)
+  NF_VERIF_INCLUDES += -I $(SELF_DIR)/stubs/linux-arch-x86
+  NF_VERIF_INCLUDES += -I $(SELF_DIR)/stubs/linux
+  NF_VERIF_INCLUDES += -I $(SELF_DIR)/stubs/linux-uapi
+endif
 
 # Include directories that reuse unmodified header files
 # Tested with 4.15.0-33-generic kernel for Ubuntu 18.04
 # Include directory order taken from regular kernel module build
-KERNEL_HEADERS ?= subset
+KERNEL_HEADERS ?= clang
 
 # Approach A
 # Each include root below is represented as separate directory tree of symbolic
@@ -84,6 +93,22 @@ endif
 ifeq ($(KERNEL_HEADERS),full)
   KERNEL := $(shell uname -r)
   KERNEL_BUILD := /lib/modules/$(KERNEL)/build
+  NF_VERIF_INCLUDES += \
+    -I $(KERNEL_BUILD)/arch/x86/include \
+    -I $(KERNEL_BUILD)/arch/x86/include/generated \
+    -I $(KERNEL_BUILD)/include \
+    -I $(KERNEL_BUILD)/arch/x86/include/uapi \
+    -I $(KERNEL_BUILD)/arch/x86/include/generated/uapi \
+    -I $(KERNEL_BUILD)/include/uapi \
+    -I $(KERNEL_BUILD)/include/generated/uapi \
+    -include $(KERNEL_BUILD)/include/linux/kconfig.h
+endif
+
+# Approach C
+# Include full kernel header directories modified for Clang
+ifeq ($(KERNEL_HEADERS),clang)
+  KERNEL := $(shell uname -r)
+  KERNEL_BUILD := /home/jryans/Projects/linux-bionic-headers/linux-headers-$(KERNEL)
   NF_VERIF_INCLUDES += \
     -I $(KERNEL_BUILD)/arch/x86/include \
     -I $(KERNEL_BUILD)/arch/x86/include/generated \
@@ -123,7 +148,8 @@ VERIF_FLAGS += -std=gnu89
 # Debugging (TODO: Remove)
 # VERIF_FLAGS += -E -v -
 # VERIF_FLAGS += -H
-VERIF_FLAGS += -ferror-limit=60
+# VERIF_FLAGS += -ferror-limit=60
+# VERIF_FLAGS += -E
 
 verify-kernel:
 	$(CLEAN_COMMAND)
