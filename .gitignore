@@ -1,5 +1,6 @@
 cscope.out
 *.o
+*.o.ur-safe
 *.d
 *.dwo
 *.ko
