@@ -151,9 +151,9 @@ VERIF_FLAGS += -std=gnu89
 # VERIF_FLAGS += -ferror-limit=60
 # VERIF_FLAGS += -E
 
-verify-kernel:
+# Verification using stub kernel APIs
+verify-with-stub-kernel:
 	$(CLEAN_COMMAND)
-	# Use kernel stub headers
 	$(COMPILE_COMMAND) $(VERIF_DEFS) -DVIGOR_STUB_KERNEL $(VERIF_INCLUDES) $(VERIF_FILES) $(VERIF_FLAGS)
 	$(LINK_COMMAND)
 	$(OPT_COMMAND)
