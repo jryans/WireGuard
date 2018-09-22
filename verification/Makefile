@@ -49,17 +49,6 @@ NF_VERIF_INCLUDES := \
   -nostdinc \
   -isystem /home/jryans/Projects/llvm-project/build-for-vigor/bin/../lib/clang/3.4.2/include
 
-# Add include directories for stubs by default
-ENABLE_STUBS ?= no
-
-# Include directories for stubs
-# TODO: Write more detailed explanation
-ifeq ($(ENABLE_STUBS),yes)
-  NF_VERIF_INCLUDES += -I $(SELF_DIR)/stubs/linux-arch-x86
-  NF_VERIF_INCLUDES += -I $(SELF_DIR)/stubs/linux
-  NF_VERIF_INCLUDES += -I $(SELF_DIR)/stubs/linux-uapi
-endif
-
 # Include full kernel header directories modified for Clang
 # Tested with 4.15.0-33-generic kernel for Ubuntu 18.04
 # Include directory order taken from regular kernel module build
