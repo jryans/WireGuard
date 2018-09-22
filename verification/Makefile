@@ -89,6 +89,8 @@ NF_VERIF_INCLUDES += -I $(WG_SRC)/compat/simd/include
 
 # Verification harness files
 NF_VERIF_HARNESS_FILES := \
+  $(SELF_DIR)/stubs/linux/*.c \
+  $(SELF_DIR)/stubs/linux/net/*.c \
   $(SELF_DIR)/harness/*.c
 
 # Include the Vigor build pipeline
