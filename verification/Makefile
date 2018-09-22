@@ -10,12 +10,26 @@ APP := WireGuard
 # Get current directory
 SELF_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
+## Kernel Module
+# Defines the build settings for the core WireGuard kernel module.
+
 # Path to WireGuard source files
 WG_SRC := $(abspath $(SELF_DIR)/../src)
 
 # Runtime and verification files
 # TODO: Re-use list from main WireGuard Makefile?
 NF_FILES := $(WG_SRC)/*.c
+
+# Runtime and verification crypto files
+# TODO: Re-use list from main WireGuard Makefile?
+# TODO: Most likely this will need stubs for verification
+# TODO: Test the arch-specific assembly variants
+NF_FILES += \
+  $(WG_SRC)/crypto/zinc/chacha20/chacha20.c \
+  $(WG_SRC)/crypto/zinc/poly1305/poly1305.c \
+  $(WG_SRC)/crypto/zinc/chacha20poly1305.c \
+  $(WG_SRC)/crypto/zinc/curve25519/curve25519.c \
+  $(WG_SRC)/crypto/zinc/blake2s/blake2s.c
 
 # Defines for verification
 # Defines taken from regular kernel module build
@@ -73,32 +87,37 @@ NF_VERIF_INCLUDES += -I $(WG_SRC)/crypto/include
 NF_VERIF_INCLUDES += -include $(WG_SRC)/compat/compat.h
 NF_VERIF_INCLUDES += -I $(WG_SRC)/compat/simd/include
 
-# Verification files
-NF_VERIF_FILES :=
-
-# Verification arguments
-NF_VERIF_ARGS :=
+# Verification harness files
+NF_VERIF_HARNESS_FILES := \
+  $(SELF_DIR)/harness/*.c
 
 # Include the Vigor build pipeline
 include $(VNDS_PATH)/nf/Makefile
 
-# Reset VERIF_FILES for now
-# TODO: Remove this when the boundaries are better understood
-VERIF_FILES := $(NF_FILES)
-
 # Additional flags from regular kernel module build
-VERIF_FLAGS += -std=gnu89
+VERIF_FLAGS += \
+  -std=gnu89 \
+  -Wno-pointer-sign \
+  -Wno-gnu-variable-sized-type-not-at-end
 
-# Debugging (TODO: Remove)
-# VERIF_FLAGS += -E -v -
-# VERIF_FLAGS += -H
-# VERIF_FLAGS += -ferror-limit=60
-# VERIF_FLAGS += -E
+## Verification Harness
+# This is a separate step because the kernel module failes to compile
+# when the KLEE uclibc include path is present.
+
+# Verification harness includes
+NF_VERIF_HARNESS_INCLUDES := \
+  $(NF_VERIF_INCLUDES) \
+  -I $(KLEE_INCLUDE) \
+  -isystem /home/jryans/Projects/klee-uclibc/include
+
+# TODO: Support building harness without verification for running tests?
+# If so, should move a lot of the verif includes to regular includes.
 
 # Verification using stub kernel APIs
 verify-with-stub-kernel:
 	$(CLEAN_COMMAND)
-	$(COMPILE_COMMAND) $(VERIF_DEFS) -DVIGOR_STUB_KERNEL $(VERIF_INCLUDES) $(VERIF_FILES) $(VERIF_FLAGS)
+	$(COMPILE_COMMAND) $(VERIF_DEFS) -DVIGOR_STUB_KERNEL $(NF_VERIF_INCLUDES) $(NF_FILES) $(VERIF_FLAGS)
+	$(COMPILE_COMMAND) $(VERIF_DEFS) -DVIGOR_STUB_KERNEL $(NF_VERIF_HARNESS_INCLUDES) $(NF_VERIF_HARNESS_FILES) $(VERIF_FLAGS)
 	$(LINK_COMMAND)
 	$(OPT_COMMAND)
 	$(VERIF_COMMAND) $(NF_VERIF_BASE_ARGS) $(NF_VERIF_ARGS)
