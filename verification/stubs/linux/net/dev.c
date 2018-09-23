@@ -9,3 +9,7 @@ int unregister_netdevice_notifier(struct notifier_block *nb)
 {
   return 0;
 }
+
+void synchronize_net()
+{
+}
