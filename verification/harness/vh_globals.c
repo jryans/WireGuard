@@ -16,17 +16,21 @@
 DEFINE_PER_CPU(int, __preempt_count);
 
 /* Multiple CPUs / SMP */
-/* TODO: Try disabling CONFIG_SMP */
 
 struct cpumask __cpu_possible_mask;
 struct cpumask __cpu_online_mask;
 struct cpumask __cpu_present_mask;
 struct cpumask __cpu_active_mask;
 
+#if NR_CPUS > 1
 unsigned int nr_cpu_ids;
+#endif // NR_CPUS > 1
+
+#ifdef CONFIG_SMP
 unsigned long __per_cpu_offset[NR_CPUS];
 
 DEFINE_PER_CPU_READ_MOSTLY(unsigned long, this_cpu_off);
+#endif // CONFIG_SMP
 
 /* Memory Management */
 
