@@ -5,16 +5,17 @@ $(error "VNDS_PATH must be set to the location of the Vigor verification \
 endif
 
 # Binary name
-APP := WireGuard
+APP := wireguard
 
 # Get current directory
-SELF_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+THIS_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
 ## Kernel Module
+
 # Defines the build settings for the core WireGuard kernel module.
 
 # Path to WireGuard source files
-WG_SRC := $(abspath $(SELF_DIR)/../src)
+WG_SRC := $(abspath $(THIS_DIR)/../src)
 
 # Runtime and verification files
 # TODO: Re-use list from main WireGuard Makefile?
@@ -31,10 +32,11 @@ NF_FILES += \
   $(WG_SRC)/crypto/zinc/curve25519/curve25519.c \
   $(WG_SRC)/crypto/zinc/blake2s/blake2s.c
 
-# Defines for verification
+# Defines for runtime and verification
 # Defines taken from regular kernel module build
 # TODO: Investigate post-build steps used for Retpoline
-NF_VERIF_DEFS := \
+NF_DEFS := \
+  -D_GNU_SOURCE \
   -D__KERNEL__ \
   -DCONFIG_X86_X32_ABI \
   -DCONFIG_AS_CFI=1 \
@@ -53,13 +55,15 @@ NF_VERIF_DEFS := \
   -DMODULE \
   -DKBUILD_BASENAME='"netlink"' \
   -DKBUILD_MODNAME='"wireguard"'
+NF_BUILD_DEFS := $(NF_DEFS)
+NF_VERIF_DEFS := $(NF_DEFS) -DKLEE_VERIFICATION
 
 # Disabled defines that conflict with Clang
 # TODO: Measure performance difference caused by these changes
 # -DCC_HAVE_ASM_GOTO: Triggers incompatible asm via jump_label.h
 
 # Start by disabling default include directories since we want precise control
-NF_VERIF_INCLUDES := \
+NF_INCLUDES := \
   -nostdinc \
   -isystem /home/jryans/Projects/llvm-project/build-for-vigor/bin/../lib/clang/3.4.2/include
 
@@ -68,7 +72,7 @@ NF_VERIF_INCLUDES := \
 # Include directory order taken from regular kernel module build
 KERNEL := $(shell uname -r)
 KERNEL_BUILD := /home/jryans/Projects/linux-bionic-headers/linux-headers-$(KERNEL)
-NF_VERIF_INCLUDES += \
+NF_INCLUDES += \
   -I $(KERNEL_BUILD)/arch/x86/include \
   -I $(KERNEL_BUILD)/arch/x86/include/generated \
   -I $(KERNEL_BUILD)/include \
@@ -79,48 +83,60 @@ NF_VERIF_INCLUDES += \
   -include $(KERNEL_BUILD)/include/linux/kconfig.h
 
 # Include directories from WireGuard
-NF_VERIF_INCLUDES += -I $(WG_SRC)/crypto/include
+NF_INCLUDES += -I $(WG_SRC)/crypto/include
 
 # Include directories from WireGuard kernal compat
 # TODO: Exclude as much as possible by using the latest Linux kernel for
 # verification. Some files are still needed with recent kernels; investigate.
-NF_VERIF_INCLUDES += -include $(WG_SRC)/compat/compat.h
-NF_VERIF_INCLUDES += -I $(WG_SRC)/compat/simd/include
-
-# Verification harness files
-NF_VERIF_HARNESS_FILES := \
-  $(SELF_DIR)/stubs/linux/*.c \
-  $(SELF_DIR)/stubs/linux/net/*.c \
-  $(SELF_DIR)/harness/*.c
+NF_INCLUDES += -include $(WG_SRC)/compat/compat.h
+NF_INCLUDES += -I $(WG_SRC)/compat/simd/include
 
 # Include the Vigor build pipeline
+# Using: VERIF_FLAGS, *_COMMAND, NF_VERIF*_ARGS
 include $(VNDS_PATH)/nf/Makefile
 
 # Additional flags from regular kernel module build
-VERIF_FLAGS += \
+NF_FLAGS := \
   -std=gnu89 \
   -Wno-pointer-sign \
   -Wno-gnu-variable-sized-type-not-at-end
+BUILD_FLAGS := $(NF_FLAGS) -c -g -O0
+# Note: This adds to VERIF_FLAGS from Vigor, unlike most of this file.
+VERIF_FLAGS += $(NF_FLAGS)
 
 ## Verification Harness
-# This is a separate step because the kernel module failes to compile
-# when the KLEE uclibc include path is present.
+
+# The harness simulates WireGuard running in a kernel via stubbed kernel APIs.
+# It can be built as a user-mode executable for debugging and inspection or
+# verified via the Vigor toolchain. (It is compiled in a separate step because
+# the kernel module failes to compile when the KLEE uclibc include path is
+# present.)
+
+# Verification harness files
+NF_VERIF_HARNESS_FILES := \
+  $(THIS_DIR)/stubs/linux/*.c \
+  $(THIS_DIR)/stubs/linux/net/*.c \
+  $(THIS_DIR)/harness/*.c
 
 # Verification harness includes
 NF_VERIF_HARNESS_INCLUDES := \
-  $(NF_VERIF_INCLUDES) \
+  $(NF_INCLUDES) \
   -I $(KLEE_INCLUDE) \
   -isystem /home/jryans/Projects/klee-uclibc/include
 
-# TODO: Support building harness without verification for running tests?
-# If so, should move a lot of the verif includes to regular includes.
+clean:
+	rm -rf *.bc *.o $(APP) uclibc
+
+# Build module with harness and stub kernel as user-mode executable
+build-with-stub-kernel:
+	$(COMPILE_COMMAND) $(NF_BUILD_DEFS) -DVIGOR_STUB_KERNEL $(NF_INCLUDES) $(NF_FILES) $(BUILD_FLAGS)
+	$(COMPILE_COMMAND) $(NF_BUILD_DEFS) -DVIGOR_STUB_KERNEL $(NF_VERIF_HARNESS_INCLUDES) $(NF_VERIF_HARNESS_FILES) $(BUILD_FLAGS)
+	$(COMPILE_COMMAND) -g -O0 -Wl,--warn-unresolved-symbols *.o -o $(APP)
 
 # Verification using stub kernel APIs
 verify-with-stub-kernel:
-	$(CLEAN_COMMAND)
-	$(COMPILE_COMMAND) $(VERIF_DEFS) -DVIGOR_STUB_KERNEL $(NF_VERIF_INCLUDES) $(NF_FILES) $(VERIF_FLAGS)
-	$(COMPILE_COMMAND) $(VERIF_DEFS) -DVIGOR_STUB_KERNEL $(NF_VERIF_HARNESS_INCLUDES) $(NF_VERIF_HARNESS_FILES) $(VERIF_FLAGS)
+	$(COMPILE_COMMAND) $(NF_VERIF_DEFS) -DVIGOR_STUB_KERNEL $(NF_INCLUDES) $(NF_FILES) $(VERIF_FLAGS)
+	$(COMPILE_COMMAND) $(NF_VERIF_DEFS) -DVIGOR_STUB_KERNEL $(NF_VERIF_HARNESS_INCLUDES) $(NF_VERIF_HARNESS_FILES) $(VERIF_FLAGS)
 	$(LINK_COMMAND)
 	$(OPT_COMMAND)
 	$(VERIF_COMMAND) $(NF_VERIF_BASE_ARGS) $(NF_VERIF_ARGS)
-	$(CLEAN_COMMAND)
