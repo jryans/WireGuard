@@ -124,6 +124,12 @@ NF_VERIF_HARNESS_INCLUDES := \
   -I $(KLEE_INCLUDE) \
   -isystem /home/jryans/Projects/klee-uclibc/include
 
+## Verification Options
+
+# Additional options for KLEE
+NF_VERIF_COMMAND_ARGS := \
+  -max-time=60
+
 clean:
 	rm -rf *.bc *.o $(APP) uclibc
 
@@ -139,4 +145,4 @@ verify-with-stub-kernel:
 	$(COMPILE_COMMAND) $(NF_VERIF_DEFS) -DVIGOR_STUB_KERNEL $(NF_VERIF_HARNESS_INCLUDES) $(NF_VERIF_HARNESS_FILES) $(VERIF_FLAGS)
 	$(LINK_COMMAND)
 	$(OPT_COMMAND)
-	$(VERIF_COMMAND) $(NF_VERIF_BASE_ARGS) $(NF_VERIF_ARGS)
+	$(VERIF_COMMAND) $(NF_VERIF_COMMAND_ARGS) $(NF_VERIF_BASE_ARGS) $(NF_VERIF_ARGS)
