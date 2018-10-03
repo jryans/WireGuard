@@ -1,5 +1,6 @@
 #include <string.h>
 // #include <stdlib.h> for malloc
+extern void *malloc(size_t __size);
 
 #include <linux/module.h>
 #include <linux/skbuff.h>
