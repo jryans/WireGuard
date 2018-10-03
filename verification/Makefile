@@ -67,6 +67,10 @@ NF_INCLUDES := \
   -nostdinc \
   -isystem /home/jryans/Projects/llvm-project/build-for-vigor/bin/../lib/clang/3.4.2/include
 
+# Replace some kernel headers that are incompatible with verification
+NF_INCLUDES += \
+  -I $(THIS_DIR)/stubs/linux-arch-x86/include
+
 # Include full kernel header directories modified for Clang
 # Tested with 4.15.0-33-generic kernel for Ubuntu 18.04
 # Include directory order taken from regular kernel module build
