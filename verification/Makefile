@@ -124,6 +124,14 @@ NF_VERIF_HARNESS_INCLUDES := \
   -I $(KLEE_INCLUDE) \
   -isystem /home/jryans/Projects/klee-uclibc/include
 
+# Linker options when building harness for regular use or replay
+UNRESOLVED_SYMBOLS := ignore
+ifeq ($(UNRESOLVED_SYMBOLS), ignore)
+  BUILD_LINK_FLAGS := --unresolved-symbols=ignore-all
+else ifeq ($(UNRESOLVED_SYMBOLS), warn)
+  BUILD_LINK_FLAGS := --warn-unresolved-symbols
+endif
+
 ## Verification Options
 
 # Additional options for KLEE
@@ -137,14 +145,14 @@ clean:
 build-with-stub-kernel:
 	$(COMPILE_COMMAND) $(NF_BUILD_DEFS) -DVIGOR_STUB_KERNEL $(NF_INCLUDES) $(NF_FILES) $(BUILD_FLAGS)
 	$(COMPILE_COMMAND) $(NF_BUILD_DEFS) -DVIGOR_STUB_KERNEL $(NF_VERIF_HARNESS_INCLUDES) $(NF_VERIF_HARNESS_FILES) $(BUILD_FLAGS)
-	$(COMPILE_COMMAND) -g -O0 -Wl,--warn-unresolved-symbols *.o -o $(APP)
+	$(COMPILE_COMMAND) -g -O0 -Wl,$(BUILD_LINK_FLAGS) *.o -o $(APP)
 
 # Build module with harness and stub kernel as user-mode executable with support
 # for replaying KLEE test files via the KTEST_FILE env var.
 build-for-replay-with-stub-kernel:
 	$(COMPILE_COMMAND) $(NF_VERIF_DEFS) -DVIGOR_STUB_KERNEL $(NF_INCLUDES) $(NF_FILES) $(BUILD_FLAGS)
 	$(COMPILE_COMMAND) $(NF_VERIF_DEFS) -DVIGOR_STUB_KERNEL $(NF_VERIF_HARNESS_INCLUDES) $(NF_VERIF_HARNESS_FILES) $(BUILD_FLAGS)
-	$(COMPILE_COMMAND) -g -O0 -L $(KLEE_BUILD_PATH)/lib -lkleeRuntest -Wl,--warn-unresolved-symbols *.o -o $(APP)
+	$(COMPILE_COMMAND) -g -O0 -L $(KLEE_BUILD_PATH)/lib -lkleeRuntest -Wl,$(BUILD_LINK_FLAGS) *.o -o $(APP)
 
 # Verification using stub kernel APIs
 verify-with-stub-kernel:
