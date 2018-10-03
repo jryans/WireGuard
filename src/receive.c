@@ -57,6 +57,10 @@ static int prepare_skb_header(struct sk_buff *skb, struct wg_device *wg)
 	size_t data_offset, data_len, header_len;
 	struct udphdr *udp;
 
+	if (unlikely((skb_tail_pointer(skb) - skb->data) != skb->len)) {
+		/* VB: `skb` length doesn't match reality. */
+		return -EINVAL;
+	}
 	if (unlikely(wg_skb_examine_untrusted_ip_hdr(skb) != skb->protocol ||
 		     skb_transport_header(skb) < skb->head ||
 		     (skb_transport_header(skb) + sizeof(struct udphdr)) >
