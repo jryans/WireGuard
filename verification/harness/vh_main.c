@@ -6,6 +6,7 @@
 #include <net/udp_tunnel.h>
 #include <net/inet_sock.h>
 
+#include "kernel_config.h"
 #include "klee.h"
 
 #include "../../device.h"
