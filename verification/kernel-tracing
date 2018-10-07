@@ -1,0 +1,15 @@
+# Check length of received packets
+
+sudo /usr/share/bcc/tools/trace 'packet_receive(struct wg_device *wg, struct sk_buff *skb)^Clen %u ts %u", skb->len, skb->truesize'
+
+0       0       swapper/5       packet_receive   len 104 ts 832
+0       0       swapper/5       packet_receive   len 1240 ts 2240
+
+# Check length of sent packets
+
+sudo /usr/share/bcc/tools/trace 'xmit(struct sk_buff *skb, struct net_device *dev) "len %u ts %u", skb->len, skb->truesize'
+
+6081    6081    ping            xmit             len 1420 ts 2304
+6081    6081    ping            xmit             len 48 ts 1280
+
+`skb->len` stays within the MTU of the tunnel, which defaults to 1420.
