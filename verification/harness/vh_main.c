@@ -68,6 +68,10 @@ int main(int argc, char* argv[])
 
   /* ... various init steps ... */
 
+  // NOTE: We assume the kernel is creating buffers correctly, with the correct
+  // size, etc. The data inside the buffer is symbolic. We may loosen these
+  // assumptions later on to also test what happens if the kernel misbehaves.
+
   // Skip ahead and try forcing a socket!
   // TODO: Remove this once `setup` is called, or make symbolic...?
   memset(&wg0, 0, sizeof(wg0));
@@ -79,12 +83,20 @@ int main(int argc, char* argv[])
   klee_make_symbolic(&skb, sizeof(skb), "r_skb");
 
   // Initialize similar to `alloc_skb`
-  char *data = malloc(SKB_MAX_ALLOC);
-  klee_make_symbolic(data, SKB_MAX_ALLOC, "r_data");
   // `alloc_size` is the size of the buffer.
-  size_t alloc_size = klee_range(0, SKB_MAX_ALLOC + 1, "r_skb_alloc_size");
-  alloc_size += sizeof(struct skb_shared_info);
-  // memset(&skb, 0, offsetof(struct sk_buff, tail));
+  // The kernel defines a max size of SKB_MAX_ALLOC = PAGE_SIZE << 2 = 16384.
+  // The tunnel's MTU defaults to 1420. Tracing shows the full buffer size maxes
+  // out around 2304. Let's be safe and offer a bit more room for now.
+  size_t alloc_size = 3072;
+  char *data = malloc(alloc_size);
+  klee_make_symbolic(data, alloc_size, "r_data");
+  // TODO: Adjust size for `skb_shared_info`?
+
+  // Clear most `skb` metadata.
+  // TODO: Relax some of these, such as `len`?
+  memset(&skb, 0, offsetof(struct sk_buff, tail));
+  // Records data size plus skb and skb shared structs.
+  skb.truesize = SKB_TRUESIZE(alloc_size);
 
   // Set some basics, such as pointers, to concrete values to save query time.
   // TODO: Relax some of these...?
