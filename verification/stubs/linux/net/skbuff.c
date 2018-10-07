@@ -2,6 +2,9 @@
 
 #include <linux/stddef.h>
 
+// TODO: Compare these to full versions in the kernel and expand supported paths
+// for framentation, etc. if needed.
+
 void consume_skb(struct sk_buff *skb)
 {
 }
