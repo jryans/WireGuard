@@ -112,12 +112,12 @@ int main(int argc, char* argv[])
 
   // Set symbolic head size like `skb_reserve`.
   const size_t head_size =
-    klee_range(0, SKB_MAX_ALLOC + 1, "r_head_size");
+    klee_range(0, alloc_size + 1, "r_head_size");
   skb.data += head_size;
   skb.len += head_size;
 
   // Set symbolic data size like `skb_put`.
-  const size_t data_size = klee_range(0, SKB_MAX_ALLOC + 1, "r_data_size");
+  const size_t data_size = klee_range(0, alloc_size + 1, "r_data_size");
   skb.tail += data_size;
   skb.len += data_size;
 
@@ -125,13 +125,13 @@ int main(int argc, char* argv[])
 
   // Set symbolic transport header (UDP).
   const size_t transport_header_offset =
-    klee_range(0, SKB_MAX_ALLOC + 1, "r_transport_header_offset");
+    klee_range(0, alloc_size + 1, "r_transport_header_offset");
   skb.transport_header = skb.data - skb.head;
   skb.transport_header += transport_header_offset;
 
   // Set symbolic network header (IP).
   const size_t network_header_offset =
-    klee_range(0, SKB_MAX_ALLOC + 1, "r_network_header_offset");
+    klee_range(0, alloc_size + 1, "r_network_header_offset");
   skb.network_header = skb.data - skb.head;
   skb.network_header += network_header_offset;
 
