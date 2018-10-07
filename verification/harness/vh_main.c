@@ -56,6 +56,12 @@ int main(int argc, char* argv[])
    */
 
   /*
+   * $ ip address add 192.168.88.70/24 dev wg0
+   *
+   * TODO: Document these steps.
+   */
+
+  /*
    * $ ip link set up dev wg0
    *
    * ... other steps ...
@@ -65,8 +71,6 @@ int main(int argc, char* argv[])
    *     - Calls `udp_sock_create` in kernel `udp_tunnel.c`
    *     - Calls `setup_udp_tunnel_sock` in kernel `udp_tunnel.c`
    */
-
-  /* ... various init steps ... */
 
   // NOTE: We assume the kernel is creating buffers correctly, with the correct
   // size, etc. The data inside the buffer is symbolic. We may loosen these
