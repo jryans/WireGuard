@@ -140,9 +140,11 @@ endif
 
 ## Verification Options
 
+# Allow multiple errors from KLEE
+VERIF_COMMAND := $(filter-out -exit-on-error,$(VERIF_COMMAND))
+
 # Additional options for KLEE
-NF_VERIF_COMMAND_ARGS := \
-  -max-time=60
+NF_VERIF_COMMAND_ARGS :=
 
 clean:
 	rm -rf *.bc *.o $(APP) uclibc
