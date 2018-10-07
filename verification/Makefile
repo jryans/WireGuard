@@ -144,7 +144,9 @@ endif
 VERIF_COMMAND := $(filter-out -exit-on-error,$(VERIF_COMMAND))
 
 # Additional options for KLEE
-NF_VERIF_COMMAND_ARGS :=
+NF_VERIF_COMMAND_ARGS := \
+  -max-solver-time=3 \
+  -debug-report-symbdex
 
 clean:
 	rm -rf *.bc *.o $(APP) uclibc
