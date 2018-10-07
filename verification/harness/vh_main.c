@@ -7,8 +7,8 @@ extern void *malloc(size_t __size);
 #include <net/udp_tunnel.h>
 #include <net/inet_sock.h>
 
-#include "kernel_config.h"
-#include "klee.h"
+#include <kernel_config.h>
+#include <klee.h>
 
 #include "../../device.h"
 #include "../../socket.h"

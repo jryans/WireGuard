@@ -125,7 +125,9 @@ NF_VERIF_HARNESS_FILES := \
 # Verification harness includes
 NF_VERIF_HARNESS_INCLUDES := \
   $(NF_INCLUDES) \
+  -I $(THIS_DIR)/klee/include \
   -I $(KLEE_INCLUDE) \
+  -I $(THIS_DIR)/harness/include \
   -isystem /home/jryans/Projects/klee-uclibc/include
 
 # Linker options when building harness for regular use or replay

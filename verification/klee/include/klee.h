@@ -12,4 +12,5 @@ void klee_make_symbolic(void *addr, size_t nbytes, const char *name) {}
 int klee_range(int begin, int end, const char *name) {
   return begin;
 }
+#define klee_assert(expr)
 #endif // !KLEE_VERIFICATION
