@@ -96,6 +96,9 @@ NF_INCLUDES += -I $(WG_SRC)/crypto/include
 NF_INCLUDES += -include $(WG_SRC)/compat/compat.h
 NF_INCLUDES += -I $(WG_SRC)/compat/simd/include
 
+# Include directories for verification helpers
+NF_INCLUDES += -I $(THIS_DIR)/klee/include
+
 # Include the Vigor build pipeline
 # Using: VERIF_FLAGS, *_COMMAND, NF_VERIF*_ARGS
 include $(VNDS_PATH)/nf/Makefile
@@ -127,8 +130,6 @@ NF_VERIF_HARNESS_FILES := \
 NF_VERIF_HARNESS_INCLUDES := \
   $(NF_INCLUDES) \
   -I $(WG_SRC) \
-  -I $(THIS_DIR)/klee/include \
-  -I $(KLEE_INCLUDE) \
   -I $(THIS_DIR)/harness/include \
   -isystem /home/jryans/Projects/klee-uclibc/include
 
