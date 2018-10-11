@@ -69,7 +69,8 @@ NF_INCLUDES := \
 
 # Replace some kernel headers that are incompatible with verification
 NF_INCLUDES += \
-  -I $(THIS_DIR)/stubs/linux-arch-x86/include
+  -I $(THIS_DIR)/stubs/linux-arch-x86/include \
+  -I $(THIS_DIR)/stubs/linux/include
 
 # Include full kernel header directories modified for Clang
 # Tested with 4.15.0-33-generic kernel for Ubuntu 18.04
