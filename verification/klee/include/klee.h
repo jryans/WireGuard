@@ -3,6 +3,9 @@
  * with no effect.
  */
 
+#ifndef _KLEE_H
+#define _KLEE_H
+
 #ifdef KLEE_VERIFICATION
 // Define this to avoid redefintion errors via `inttypes.h` in `klee/klee.h`
 #define _INTTYPES_H
@@ -14,3 +17,5 @@ int klee_range(int begin, int end, const char *name) {
 }
 #define klee_assert(expr)
 #endif // KLEE_VERIFICATION
+
+#endif // _KLEE_H
