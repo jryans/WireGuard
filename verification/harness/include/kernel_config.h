@@ -33,3 +33,7 @@
 #error	"CONFIG_ARCH_HAS_REFCOUNT implies inline asm, which KLEE does not "
 	"support. Please disable."
 #endif
+
+#if IS_ENABLED(CONFIG_IPV6)
+#error	"CONFIG_IPV6 adds complexity. Please disable."
+#endif
