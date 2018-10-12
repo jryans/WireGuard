@@ -2,5 +2,5 @@
 
 void memzero_explicit(void *s, size_t count)
 {
-  memset(s, 0, count);
+	memset(s, 0, count);
 }

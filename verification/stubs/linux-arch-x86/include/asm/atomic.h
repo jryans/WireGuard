@@ -14,21 +14,21 @@
 
 static __always_inline int atomic_read(const atomic_t *v)
 {
-  return v->counter;
+	return v->counter;
 }
 
 static __always_inline void atomic_set(atomic_t *v, int i)
 {
-  v->counter = i;
+	v->counter = i;
 }
 
 static __always_inline int atomic_cmpxchg(atomic_t *v, int oldv, int newv)
 {
-  int mem = v->counter;
-  if (mem == oldv) {
-    v->counter = newv;
-  }
-  return mem;
+	int mem = v->counter;
+	if (mem == oldv) {
+		v->counter = newv;
+	}
+	return mem;
 }
 
 #define ATOMIC64_INIT(i) { (i) }

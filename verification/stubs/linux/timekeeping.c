@@ -4,5 +4,5 @@
 
 u64 ktime_get_boot_fast_ns(void)
 {
-  return 0;
+	return 0;
 }

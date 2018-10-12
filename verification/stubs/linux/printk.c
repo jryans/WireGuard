@@ -1,4 +1,4 @@
 int printk(const char *fmt, ...)
 {
-  return 0;
+	return 0;
 }

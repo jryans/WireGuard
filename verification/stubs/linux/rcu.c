@@ -1,2 +1,3 @@
-void synchronize_rcu_bh() {
+void synchronize_rcu_bh()
+{
 }
