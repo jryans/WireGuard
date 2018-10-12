@@ -152,25 +152,28 @@ NF_VERIF_COMMAND_ARGS := \
   -debug-report-symbdex
 
 clean:
-	rm -rf *.bc *.o $(APP) uclibc
+	rm -rf target
 
 # Build module with harness and stub kernel as user-mode executable
-build-with-stub-kernel:
-	$(COMPILE_COMMAND) $(NF_BUILD_DEFS) -DVIGOR_STUB_KERNEL $(NF_VERIF_HARNESS_INCLUDES) $(NF_VERIF_HARNESS_FILES) $(BUILD_FLAGS)
-	$(COMPILE_COMMAND) $(NF_BUILD_DEFS) -DVIGOR_STUB_KERNEL $(NF_INCLUDES) $(NF_FILES) $(BUILD_FLAGS)
-	$(COMPILE_COMMAND) -g -O0 -Wl,$(BUILD_LINK_FLAGS) *.o -o $(APP)
+build-for-testing-with-stub-kernel:
+	mkdir -p target/test
+	cd target/test && $(COMPILE_COMMAND) $(NF_BUILD_DEFS) -DVIGOR_STUB_KERNEL $(NF_VERIF_HARNESS_INCLUDES) $(NF_VERIF_HARNESS_FILES) $(BUILD_FLAGS)
+	cd target/test && $(COMPILE_COMMAND) $(NF_BUILD_DEFS) -DVIGOR_STUB_KERNEL $(NF_INCLUDES) $(NF_FILES) $(BUILD_FLAGS)
+	cd target/test && $(COMPILE_COMMAND) -g -O0 -Wl,$(BUILD_LINK_FLAGS) *.o -o $(APP)
 
 # Build module with harness and stub kernel as user-mode executable with support
 # for replaying KLEE test files via the KTEST_FILE env var.
 build-for-replay-with-stub-kernel:
-	$(COMPILE_COMMAND) $(NF_VERIF_DEFS) -DVIGOR_STUB_KERNEL $(NF_VERIF_HARNESS_INCLUDES) $(NF_VERIF_HARNESS_FILES) $(BUILD_FLAGS)
-	$(COMPILE_COMMAND) $(NF_VERIF_DEFS) -DVIGOR_STUB_KERNEL $(NF_INCLUDES) $(NF_FILES) $(BUILD_FLAGS)
-	$(COMPILE_COMMAND) -g -O0 -L $(KLEE_BUILD_PATH)/lib -lkleeRuntest -Wl,$(BUILD_LINK_FLAGS) *.o -o $(APP)
+	mkdir -p target/replay
+	cd target/replay && $(COMPILE_COMMAND) $(NF_VERIF_DEFS) -DVIGOR_STUB_KERNEL $(NF_VERIF_HARNESS_INCLUDES) $(NF_VERIF_HARNESS_FILES) $(BUILD_FLAGS)
+	cd target/replay && $(COMPILE_COMMAND) $(NF_VERIF_DEFS) -DVIGOR_STUB_KERNEL $(NF_INCLUDES) $(NF_FILES) $(BUILD_FLAGS)
+	cd target/replay && $(COMPILE_COMMAND) -g -O0 -L $(KLEE_BUILD_PATH)/lib -lkleeRuntest -Wl,$(BUILD_LINK_FLAGS) *.o -o $(APP)
 
 # Verification using stub kernel APIs
 verify-with-stub-kernel:
-	$(COMPILE_COMMAND) $(NF_VERIF_DEFS) -DVIGOR_STUB_KERNEL $(NF_VERIF_HARNESS_INCLUDES) $(NF_VERIF_HARNESS_FILES) $(VERIF_FLAGS)
-	$(COMPILE_COMMAND) $(NF_VERIF_DEFS) -DVIGOR_STUB_KERNEL $(NF_INCLUDES) $(NF_FILES) $(VERIF_FLAGS)
-	$(LINK_COMMAND)
-	$(OPT_COMMAND)
-	$(VERIF_COMMAND) $(NF_VERIF_COMMAND_ARGS) $(NF_VERIF_BASE_ARGS) $(NF_VERIF_ARGS)
+	mkdir -p target/verify
+	cd target/verify && $(COMPILE_COMMAND) $(NF_VERIF_DEFS) -DVIGOR_STUB_KERNEL $(NF_VERIF_HARNESS_INCLUDES) $(NF_VERIF_HARNESS_FILES) $(VERIF_FLAGS)
+	cd target/verify && $(COMPILE_COMMAND) $(NF_VERIF_DEFS) -DVIGOR_STUB_KERNEL $(NF_INCLUDES) $(NF_FILES) $(VERIF_FLAGS)
+	cd target/verify && $(LINK_COMMAND)
+	cd target/verify && $(OPT_COMMAND)
+	cd target/verify && $(VERIF_COMMAND) $(NF_VERIF_COMMAND_ARGS) $(NF_VERIF_BASE_ARGS) $(NF_VERIF_ARGS)
