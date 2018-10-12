@@ -9,14 +9,17 @@
 
 #include <linux/types.h>
 
+#include <linux/gfp.h>
+
 #include <klee.h>
 
 struct ptr_ring {
 	void *item;
 };
 
-static inline int ptr_ring_init(struct ptr_ring *r, int size, gfp_t gfp)
+static inline int ptr_ring_init(struct ptr_ring *r, int size, gfp_t flags)
 {
+	klee_assert((flags & GFP_KERNEL) == GFP_KERNEL);
 	r->item = NULL;
 	return 0;
 }

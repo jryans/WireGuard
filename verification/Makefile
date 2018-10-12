@@ -123,6 +123,7 @@ VERIF_FLAGS += $(NF_FLAGS)
 # Verification harness files
 NF_VERIF_HARNESS_FILES := \
   $(THIS_DIR)/stubs/linux/*.c \
+  $(THIS_DIR)/stubs/linux/mm/*.c \
   $(THIS_DIR)/stubs/linux/net/*.c \
   $(THIS_DIR)/harness/*.c
 

@@ -1,5 +1,7 @@
 #include <linux/slab.h>
 
+#include <linux/gfp.h>
+
 #include <klee.h>
 
 // #include <stdlib.h> for malloc
@@ -8,6 +10,7 @@ extern void free(void *__ptr);
 
 void *__kmalloc(size_t size, gfp_t flags)
 {
+	klee_assert((flags & GFP_KERNEL) == GFP_KERNEL);
 	return malloc(size);
 }
 
@@ -40,6 +43,7 @@ void kmem_cache_destroy(struct kmem_cache *cache)
 
 void *kmem_cache_alloc(struct kmem_cache *cache, gfp_t flags)
 {
+	klee_assert((flags & GFP_KERNEL) == GFP_KERNEL);
 	// TODO: Actually reuse objects as in the real cache?
 	return malloc(cache->object_size);
 }
