@@ -24,7 +24,7 @@ void destroy_workqueue(struct workqueue_struct *wq)
 void __queue_work(int cpu, struct workqueue_struct *wq,
 		  struct work_struct *work)
 {
-	// TODO: Use an event queue so this happens async...
+	// For this variant of queuing, it seems acceptable to run immediately.
 	work->func(work);
 }
 
@@ -39,4 +39,12 @@ bool queue_work_on(int cpu, struct workqueue_struct *wq,
 	}
 
 	return ret;
+}
+
+bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
+			   struct delayed_work *dwork, unsigned long delay)
+{
+	// TODO: Use an event queue so this actually happens after a delay?
+	struct work_struct *work = &dwork->work;
+	return queue_work_on(cpu, wq, work);
 }
