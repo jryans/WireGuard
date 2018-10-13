@@ -14,10 +14,8 @@ extern void free(void *__ptr);
 void *kvmalloc_node(size_t size, gfp_t flags, int node)
 {
 	// Ensure only supported flags are used.
-	const gfp_t supported_flags = GFP_KERNEL | __GFP_ZERO;
+	const gfp_t supported_flags = GFP_KERNEL | GFP_ATOMIC | __GFP_ZERO;
 	klee_assert((flags | supported_flags) == supported_flags);
-	// GFP_KERNEL must be passed.
-	klee_assert((flags & GFP_KERNEL) == GFP_KERNEL);
 	// Specific nodes are not supported.
 	klee_assert(node == NUMA_NO_NODE);
 	void *ptr = malloc(size);

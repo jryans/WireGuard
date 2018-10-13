@@ -12,10 +12,8 @@ extern void free(void *__ptr);
 void *__kmalloc(size_t size, gfp_t flags)
 {
 	// Ensure only supported flags are used.
-	const gfp_t supported_flags = GFP_KERNEL | __GFP_ZERO;
+	const gfp_t supported_flags = GFP_KERNEL | GFP_ATOMIC | __GFP_ZERO;
 	klee_assert((flags | supported_flags) == supported_flags);
-	// GFP_KERNEL must be passed.
-	klee_assert((flags & GFP_KERNEL) == GFP_KERNEL);
 	void *ptr = malloc(size);
 	if (!ptr) {
 		return NULL;
@@ -57,10 +55,8 @@ void kmem_cache_destroy(struct kmem_cache *cache)
 void *kmem_cache_alloc(struct kmem_cache *cache, gfp_t flags)
 {
 	// Ensure only supported flags are used.
-	const gfp_t supported_flags = GFP_KERNEL;
+	const gfp_t supported_flags = GFP_KERNEL | GFP_ATOMIC;
 	klee_assert((flags | supported_flags) == supported_flags);
-	// GFP_KERNEL must be passed.
-	klee_assert((flags & GFP_KERNEL) == GFP_KERNEL);
 	// TODO: Actually reuse objects as in the real cache?
 	return malloc(cache->object_size);
 }
