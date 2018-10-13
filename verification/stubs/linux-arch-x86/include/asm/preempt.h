@@ -2,6 +2,8 @@
  * Vigor: Replace preempt functions with single thread versions since we only
  * simulate a single core.  This also gets around inline assembly, which KLEE
  * can't handle.
+ *
+ * TODO: Require preemption to be fully disabled?
  */
 
 /* SPDX-License-Identifier: GPL-2.0 */
