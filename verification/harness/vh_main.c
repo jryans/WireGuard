@@ -18,18 +18,6 @@ extern struct rtnl_link_ops wg_link_ops;
 extern struct inet_sock sock_ipv4_0;
 extern udp_tunnel_encap_rcv_t sock_ipv4_0_receive;
 
-void init_globals()
-{
-	// ratelimiter.c uses this values to determine a good hash table size.
-	// If the total RAM is above 1 GiB, it uses a constant size.  If not,
-	// the size is computed relative to the total RAM.  Allow total RAM to
-	// range from 128 KiB (the minimum safe value for the size computation)
-	// to 2 GiB.
-	totalram_pages =
-		klee_range(1U << (17 - PAGE_SHIFT), (1U << (31 - PAGE_SHIFT)),
-			   "totalram_pages");
-}
-
 /**
  * Initialize `net_device` similar to `alloc_netdev_mqs`.
  */

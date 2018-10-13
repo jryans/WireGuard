@@ -17,20 +17,10 @@ DEFINE_PER_CPU(int, __preempt_count);
 
 /* Multiple CPUs / SMP */
 
-struct cpumask __cpu_possible_mask;
-struct cpumask __cpu_online_mask;
-struct cpumask __cpu_present_mask;
-struct cpumask __cpu_active_mask;
-
-#if NR_CPUS > 1
-unsigned int nr_cpu_ids;
-#endif // NR_CPUS > 1
-
-#ifdef CONFIG_SMP
-unsigned long __per_cpu_offset[NR_CPUS];
-
-DEFINE_PER_CPU_READ_MOSTLY(unsigned long, this_cpu_off);
-#endif // CONFIG_SMP
+struct cpumask __cpu_possible_mask = { CPU_BITS_CPU0 };
+struct cpumask __cpu_online_mask = { CPU_BITS_CPU0 };
+struct cpumask __cpu_present_mask = { CPU_BITS_CPU0 };
+struct cpumask __cpu_active_mask = { CPU_BITS_CPU0 };
 
 /* Memory Management */
 
@@ -49,3 +39,15 @@ unsigned long volatile __cacheline_aligned_in_smp __jiffy_arch_data jiffies;
 /* Work Queue */
 
 struct workqueue_struct *system_power_efficient_wq;
+
+void init_globals()
+{
+	// ratelimiter.c uses this values to determine a good hash table size.
+	// If the total RAM is above 1 GiB, it uses a constant size.  If not,
+	// the size is computed relative to the total RAM.  Allow total RAM to
+	// range from 128 KiB (the minimum safe value for the size computation)
+	// to 2 GiB.
+	totalram_pages =
+		klee_range(1U << (17 - PAGE_SHIFT), (1U << (31 - PAGE_SHIFT)),
+			   "totalram_pages");
+}
