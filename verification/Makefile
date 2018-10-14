@@ -21,17 +21,6 @@ WG_SRC := $(abspath $(THIS_DIR)/../src)
 # TODO: Re-use list from main WireGuard Makefile?
 NF_FILES := $(WG_SRC)/*.c
 
-# Runtime and verification crypto files
-# TODO: Re-use list from main WireGuard Makefile?
-# TODO: Most likely this will need stubs for verification
-# TODO: Test the arch-specific assembly variants
-NF_FILES += \
-  $(WG_SRC)/crypto/zinc/chacha20/chacha20.c \
-  $(WG_SRC)/crypto/zinc/poly1305/poly1305.c \
-  $(WG_SRC)/crypto/zinc/chacha20poly1305.c \
-  $(WG_SRC)/crypto/zinc/curve25519/curve25519.c \
-  $(WG_SRC)/crypto/zinc/blake2s/blake2s.c
-
 # Defines for runtime and verification
 # Defines taken from regular kernel module build
 # TODO: Investigate post-build steps used for Retpoline
