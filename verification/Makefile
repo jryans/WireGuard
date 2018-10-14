@@ -17,6 +17,11 @@ THIS_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 # Path to WireGuard source files
 WG_SRC := $(abspath $(THIS_DIR)/../src)
 
+# Ensure the regular module build has produced the module metadata
+# (wireguard.mod.c) via modpost.
+../src/wireguard.mod.c:
+	$(MAKE) -C ../src module
+
 # Runtime and verification files
 # TODO: Re-use list from main WireGuard Makefile?
 NF_FILES := $(WG_SRC)/*.c
@@ -145,7 +150,7 @@ clean:
 	rm -rf target
 
 # Build module with harness and stub kernel as user-mode executable
-build-for-testing-with-stub-kernel:
+build-for-testing-with-stub-kernel: ../src/wireguard.mod.c
 	mkdir -p target/test
 	cd target/test && $(COMPILE_COMMAND) $(NF_BUILD_DEFS) -DVIGOR_STUB_KERNEL $(NF_VERIF_HARNESS_INCLUDES) $(NF_VERIF_HARNESS_FILES) $(BUILD_FLAGS)
 	cd target/test && $(COMPILE_COMMAND) $(NF_BUILD_DEFS) -DVIGOR_STUB_KERNEL $(NF_INCLUDES) $(NF_FILES) $(BUILD_FLAGS)
@@ -153,14 +158,14 @@ build-for-testing-with-stub-kernel:
 
 # Build module with harness and stub kernel as user-mode executable with support
 # for replaying KLEE test files via the KTEST_FILE env var.
-build-for-replay-with-stub-kernel:
+build-for-replay-with-stub-kernel: ../src/wireguard.mod.c
 	mkdir -p target/replay
 	cd target/replay && $(COMPILE_COMMAND) $(NF_VERIF_DEFS) -DVIGOR_STUB_KERNEL $(NF_VERIF_HARNESS_INCLUDES) $(NF_VERIF_HARNESS_FILES) $(BUILD_FLAGS)
 	cd target/replay && $(COMPILE_COMMAND) $(NF_VERIF_DEFS) -DVIGOR_STUB_KERNEL $(NF_INCLUDES) $(NF_FILES) $(BUILD_FLAGS)
 	cd target/replay && $(COMPILE_COMMAND) -g -O0 -L $(KLEE_BUILD_PATH)/lib -lkleeRuntest -Wl,$(BUILD_LINK_FLAGS) *.o -o $(APP)
 
 # Verification using harness and stub kernel APIs
-verify-with-stub-kernel:
+verify-with-stub-kernel: ../src/wireguard.mod.c
 	mkdir -p target/verify
 	cd target/verify && $(COMPILE_COMMAND) $(NF_VERIF_DEFS) -DVIGOR_STUB_KERNEL $(NF_VERIF_HARNESS_INCLUDES) $(NF_VERIF_HARNESS_FILES) $(VERIF_FLAGS)
 	cd target/verify && $(COMPILE_COMMAND) $(NF_VERIF_DEFS) -DVIGOR_STUB_KERNEL $(NF_INCLUDES) $(NF_FILES) $(VERIF_FLAGS)
