@@ -159,7 +159,7 @@ build-for-replay-with-stub-kernel:
 	cd target/replay && $(COMPILE_COMMAND) $(NF_VERIF_DEFS) -DVIGOR_STUB_KERNEL $(NF_INCLUDES) $(NF_FILES) $(BUILD_FLAGS)
 	cd target/replay && $(COMPILE_COMMAND) -g -O0 -L $(KLEE_BUILD_PATH)/lib -lkleeRuntest -Wl,$(BUILD_LINK_FLAGS) *.o -o $(APP)
 
-# Verification using stub kernel APIs
+# Verification using harness and stub kernel APIs
 verify-with-stub-kernel:
 	mkdir -p target/verify
 	cd target/verify && $(COMPILE_COMMAND) $(NF_VERIF_DEFS) -DVIGOR_STUB_KERNEL $(NF_VERIF_HARNESS_INCLUDES) $(NF_VERIF_HARNESS_FILES) $(VERIF_FLAGS)
