@@ -7,6 +7,7 @@
 
 void consume_skb(struct sk_buff *skb)
 {
+	// TODO: Change this when sk_buffs are allocated on the heap.
 }
 
 void *__pskb_pull_tail(struct sk_buff *skb, int delta)
@@ -31,4 +32,9 @@ void *skb_push(struct sk_buff *skb, unsigned int len)
 void skb_queue_tail(struct sk_buff_head *list, struct sk_buff *newsk)
 {
 	__skb_queue_tail(list, newsk);
+}
+
+struct sk_buff *skb_dequeue(struct sk_buff_head *list)
+{
+	return __skb_dequeue(list);
 }
