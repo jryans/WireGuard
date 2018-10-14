@@ -119,6 +119,7 @@ NF_VERIF_HARNESS_FILES := \
   $(THIS_DIR)/stubs/linux/*.c \
   $(THIS_DIR)/stubs/linux/mm/*.c \
   $(THIS_DIR)/stubs/linux/net/*.c \
+  $(THIS_DIR)/stubs/zinc/*.c \
   $(THIS_DIR)/harness/*.c
 
 # Verification harness includes
